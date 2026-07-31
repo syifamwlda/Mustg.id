@@ -23,3 +23,13 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Laravel backend
+mustg-backend/vendor/
+mustg-backend/.env
+mustg-backend/storage/*.key
+mustg-backend/storage/logs/*.log
+mustg-backend/storage/framework/cache/*
+mustg-backend/storage/framework/sessions/*
+mustg-backend/storage/framework/views/*
+mustg-backend/bootstrap/cache/*.php
