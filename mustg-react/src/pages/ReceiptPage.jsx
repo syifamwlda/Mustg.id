@@ -4,24 +4,58 @@ import { formatIDR } from '../data/destinations'
 import { getOrder } from '../services/api'
 import toast from 'react-hot-toast'
 
-const STEPS = ['Pilih Tiket','Data Pemesan','Pembayaran','Selesai']
-const PAY_LABEL = { BANK_TRANSFER:'Transfer Bank', EWALLET:'E-Wallet', CARD:'Kartu Kredit/Debit' }
+const STEPS = ['Pilih Tiket', 'Data Pemesan', 'Pembayaran', 'Selesai']
+const PAY_LABEL = { BANK_TRANSFER: 'Transfer Bank (VA)', EWALLET: 'QRIS & E-Wallet', CARD: 'Kartu Kredit/Debit' }
 
 function StepBar({ current }) {
   return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', marginBottom:40 }}>
-      {STEPS.map((label,i) => {
-        const done = i<current, active = i===current
+    <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 40, overflowX: 'auto', padding: '10px 0' }}>
+      {STEPS.map((label, i) => {
+        const done = i < current
+        const active = i === current
         return (
-          <div key={label} style={{ display:'flex', alignItems:'center' }}>
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
-              <div style={{ width:38, height:38, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', background:done||active?'var(--accent)':'var(--bg-3)', border:`2px solid ${done||active?'var(--accent)':'var(--border)'}`, boxShadow:done||active?'0 4px 12px rgba(0,102,255,0.2)':'none' }}>
-                {done||active?<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  :<span style={{ fontSize:13, fontWeight:700, color:'var(--text-muted)', fontFamily:'var(--font-ui)' }}>{i+1}</span>}
+          <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: done || active ? 'var(--accent)' : 'var(--bg-surface)',
+                  border: `2px solid ${done || active ? 'var(--accent)' : 'var(--border)'}`,
+                  boxShadow: done || active ? 'var(--shadow-glow)' : 'none',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                {done || active ? (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : (
+                  <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)' }}>
+                    {i + 1}
+                  </span>
+                )}
               </div>
-              <span style={{ fontSize:11, fontWeight:active?700:400, color:done||active?'var(--accent)':'var(--text-muted)', fontFamily:'var(--font-ui)', whiteSpace:'nowrap' }}>{label}</span>
+              <span style={{ fontSize: 12, fontWeight: active ? 700 : 500, color: done || active ? 'var(--accent)' : 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                {label}
+              </span>
             </div>
-            {i<STEPS.length-1 && <div style={{ width:'clamp(30px,7vw,80px)', height:2, background:i<current?'var(--accent)':'var(--border)', margin:'0 6px', marginBottom:22, borderRadius:1 }}/>}
+            {i < STEPS.length - 1 && (
+              <div
+                style={{
+                  width: 'clamp(30px, 6vw, 70px)',
+                  height: 2,
+                  background: i < current ? 'var(--accent)' : 'var(--border)',
+                  margin: '0 8px',
+                  marginBottom: 24,
+                  borderRadius: 2,
+                }}
+              />
+            )}
           </div>
         )
       })}
@@ -33,7 +67,6 @@ export default function ReceiptPage() {
   const { navigate, orderData, setOrderData } = useAppStore()
   const [refreshing, setRefreshing] = useState(false)
 
-  // Refresh dari backend saat page dibuka
   useEffect(() => {
     const code = orderData?.order_code
     if (!code) return
@@ -44,192 +77,362 @@ export default function ReceiptPage() {
       .finally(() => setRefreshing(false))
   }, [])
 
-  if (!orderData) return (
-    <div style={{ minHeight:'100vh', background:'var(--bg)', display:'flex', alignItems:'center', justifyContent:'center', padding:24 }}>
-      <div style={{ textAlign:'center', background:'#fff', borderRadius:24, padding:48, boxShadow:'var(--shadow-lg)' }}>
-        <div style={{ fontSize:64, marginBottom:20 }}>🎫</div>
-        <h2 style={{ fontSize:22, fontWeight:700, color:'var(--text-primary)', fontFamily:'var(--font-ui)', marginBottom:16 }}>Data pesanan tidak ditemukan</h2>
-        <button onClick={()=>navigate('home')} style={{ background:'linear-gradient(135deg,#0066ff,#00c6ff)', color:'#fff', border:'none', borderRadius:12, padding:'12px 28px', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:'var(--font-ui)' }}>Kembali ke Home</button>
+  if (!orderData) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div style={{ textAlign: 'center', background: '#fff', borderRadius: 24, padding: 48, boxShadow: 'var(--shadow-lg)' }}>
+          <div style={{ fontSize: 60, marginBottom: 16 }}>🎫</div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'var(--font-display)', marginBottom: 16 }}>
+            Data Pesanan Tidak Ditemukan
+          </h2>
+          <button
+            onClick={() => navigate('home')}
+            style={{
+              background: 'var(--grad-primary)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 14,
+              padding: '12px 28px',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Kembali ke Beranda
+          </button>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   const {
-    order_code, qty, total, visit_date, payment_method, confirmed_at, created_at,
-    customer_name, customer_phone, customer_email,
-    ticket_subtotal, transport_subtotal, guide_subtotal,
-    destination, ticket_type, transport, tour_guide,
+    order_code,
+    order_number,
+    qty,
+    total,
+    total_amount,
+    visit_date,
+    payment_method,
+    confirmed_at,
+    created_at,
+    customer_name,
+    customer_phone,
+    customer_email,
+    ticket_subtotal,
+    transport_subtotal,
+    guide_subtotal,
+    destination,
+    ticket_type,
+    transport,
+    tour_guide,
   } = orderData
 
-  const destName  = destination?.name || '—'
-  const destCity  = destination?.city || ''
-  const destThumb = destination?.thumbnail_url
-  const ticketName = ticket_type?.name || orderData?.ticket?.name || '—'
-  const orderDate  = confirmed_at || created_at
+  const code = order_code || order_number || 'MG-00821'
+  const destName = destination?.name || orderData?.ticket?.name || 'Wisata Yogyakarta'
+  const destCity = destination?.city || 'Yogyakarta'
+  const destThumb = destination?.thumbnail_url || 'https://images.unsplash.com/photo-1584810359583-96fc3448beaa?q=80&w=1200&auto=format&fit=crop'
+  const ticketName = ticket_type?.name || orderData?.ticket?.name || 'Tiket Kunjungan Reguler'
+  const finalTotal = total || total_amount || 0
 
   return (
-    <div style={{ background:'var(--bg)', minHeight:'100vh' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       {/* Topbar */}
-      <div className="no-print" style={{ background:'#fff', borderBottom:'1px solid var(--border)', padding:'0 24px', position:'sticky', top:0, zIndex:100, boxShadow:'var(--shadow-sm)' }}>
-        <div style={{ maxWidth:720, margin:'0 auto', height:64, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <button onClick={()=>navigate('home')} style={{ background:'none', border:'none', display:'flex', alignItems:'center', gap:8, cursor:'pointer' }}>
-            <div style={{ width:34, height:34, borderRadius:10, background:'linear-gradient(135deg,#0066ff,#00c6ff)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16 }}>🌴</div>
-            <span style={{ fontFamily:'var(--font-ui)', fontWeight:800, fontSize:16, color:'var(--text-primary)' }}>MustG<span style={{ color:'var(--accent)' }}>.id</span></span>
+      <div className="no-print" style={{ background: '#fff', borderBottom: '1px solid var(--border)', padding: '0 24px', position: 'sticky', top: 0, zIndex: 100, boxShadow: 'var(--shadow-sm)' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', height: 68, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button onClick={() => navigate('home')} style={{ background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: 0 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 12, background: 'linear-gradient(135deg, #2563eb, #0284c7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🌴</div>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--text-primary)' }}>
+              MustG<span style={{ color: 'var(--accent)' }}>.id</span>
+            </span>
           </button>
-          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-            {refreshing && <span style={{ fontSize:12, color:'var(--text-muted)' }}>🔄 Memperbarui...</span>}
-            <button onClick={()=>{ navigator.clipboard.writeText(order_code||''); toast.success('Kode disalin!') }}
-              style={{ background:'var(--bg-3)', border:'1.5px solid var(--border)', borderRadius:9, padding:'8px 14px', fontSize:13, color:'var(--text-secondary)', cursor:'pointer', fontFamily:'var(--font-sans)', display:'flex', alignItems:'center', gap:5 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(code)
+                toast.success('Kode tiket disalin!')
+              }}
+              style={{
+                background: 'var(--bg)',
+                border: '1px solid var(--border)',
+                borderRadius: 10,
+                padding: '8px 14px',
+                fontSize: 13,
+                fontWeight: 600,
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
               📋 Salin Kode
             </button>
-            <button onClick={()=>window.print()}
-              style={{ background:'linear-gradient(135deg,#0066ff,#00c6ff)', border:'none', borderRadius:9, padding:'8px 16px', fontSize:13, color:'#fff', cursor:'pointer', fontFamily:'var(--font-ui)', fontWeight:700 }}>
-              🖨️ Cetak
+            <button
+              onClick={() => window.print()}
+              style={{
+                background: 'var(--grad-primary)',
+                border: 'none',
+                borderRadius: 10,
+                padding: '8px 18px',
+                fontSize: 13,
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: 700,
+                boxShadow: 'var(--shadow-glow)',
+              }}
+            >
+              🖨️ Cetak E-Tiket
             </button>
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth:720, margin:'0 auto', padding:'48px 24px 80px' }}>
-        <StepBar current={3}/>
+      <div className="container" style={{ maxWidth: 760, margin: '0 auto', padding: '44px 24px 80px' }}>
+        <StepBar current={3} />
 
-        {/* Success header */}
-        <div style={{ textAlign:'center', marginBottom:32 }}>
-          <div style={{ width:72, height:72, borderRadius:'50%', background:'rgba(0,184,148,0.1)', border:'2px solid var(--green)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px', fontSize:34, animation:'float 3s ease-in-out infinite' }}>🎉</div>
-          <h1 style={{ fontFamily:'var(--font-display)', fontSize:'clamp(24px,4vw,38px)', color:'var(--text-primary)', margin:'0 0 8px', fontWeight:700 }}>
-            Pemesanan <span style={{ color:'var(--accent)', fontStyle:'italic' }}>Berhasil!</span>
+        {/* Celebration Header */}
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <div
+            style={{
+              width: 76,
+              height: 76,
+              borderRadius: '50%',
+              background: 'rgba(5, 150, 105, 0.1)',
+              border: '2px solid #059669',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              fontSize: 36,
+            }}
+          >
+            🎉
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 4vw, 38px)', color: 'var(--text-primary)', margin: '0 0 8px', fontWeight: 800 }}>
+            Pemesanan Tiket <span style={{ color: 'var(--accent)' }}>Berhasil!</span>
           </h1>
-          <p style={{ fontSize:15, color:'var(--text-secondary)', lineHeight:1.6 }}>Tunjukkan e-ticket ini saat masuk ke destinasi.</p>
+          <p style={{ fontSize: 15, color: 'var(--text-secondary)', margin: 0 }}>
+            E-Tiket resmi telah diterbitkan. Tunjukkan barcode/QR Code ini langsung ke petugas gerbang masuk.
+          </p>
         </div>
 
-        {/* Receipt card */}
-        <div style={{ background:'#fff', border:'1.5px solid rgba(0,102,255,0.12)', borderRadius:24, overflow:'hidden', boxShadow:'0 20px 60px rgba(0,0,0,0.1)' }}>
-          {/* Header */}
-          <div style={{ background:'linear-gradient(135deg,rgba(0,102,255,0.05),rgba(0,198,255,0.03))', borderBottom:'1px dashed rgba(0,102,255,0.12)', padding:'22px 28px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <div style={{ width:32, height:32, borderRadius:9, background:'linear-gradient(135deg,#0066ff,#00c6ff)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15 }}>🌴</div>
+        {/* Luxury Boarding Pass / Ticket Voucher Card */}
+        <div
+          style={{
+            background: '#ffffff',
+            border: '1px solid var(--border)',
+            borderRadius: 26,
+            overflow: 'hidden',
+            boxShadow: 'var(--shadow-lg)',
+          }}
+        >
+          {/* Card Top Header */}
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(2, 132, 199, 0.05) 100%)',
+              borderBottom: '1px dashed rgba(37, 99, 235, 0.2)',
+              padding: '24px 30px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 14,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #2563eb, #0284c7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🌴</div>
               <div>
-                <p style={{ fontFamily:'var(--font-ui)', fontWeight:800, fontSize:15, color:'var(--text-primary)', margin:0 }}>MustG<span style={{ color:'var(--accent)' }}>.id</span></p>
-                <p style={{ fontSize:10, color:'var(--text-muted)', margin:0 }}>E-Ticket & Booking Receipt</p>
+                <p style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16, color: 'var(--text-primary)', margin: 0 }}>
+                  MustG<span style={{ color: 'var(--accent)' }}>.id</span>
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>Tiket Digital Resmi Wisata Yogyakarta</p>
               </div>
             </div>
-            <div style={{ textAlign:'right' }}>
-              <p style={{ fontSize:10, color:'var(--text-muted)', margin:'0 0 2px', fontFamily:'var(--font-ui)', letterSpacing:'1px', textTransform:'uppercase' }}>Order Code</p>
-              <p style={{ fontSize:20, fontWeight:900, color:'var(--accent)', fontFamily:'var(--font-ui)', letterSpacing:'2px', margin:0 }}>{order_code}</p>
+
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', display: 'block', marginBottom: 2 }}>
+                KODE E-TIKET
+              </span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent)', fontFamily: 'var(--font-display)', letterSpacing: '2px' }}>
+                {code}
+              </span>
             </div>
           </div>
 
-          {/* Status bar */}
-          <div style={{ padding:'10px 28px', background:'rgba(0,184,148,0.05)', borderBottom:'1px solid rgba(0,184,148,0.1)', display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:7, height:7, borderRadius:'50%', background:'var(--green)', animation:'pulse 2s infinite' }}/>
-            <span style={{ fontSize:12, fontWeight:700, color:'var(--green)', fontFamily:'var(--font-ui)' }}>PEMBAYARAN DIKONFIRMASI</span>
-            <span style={{ fontSize:11, color:'var(--text-muted)', marginLeft:'auto' }}>
-              {orderDate ? new Date(orderDate).toLocaleString('id-ID') : '—'}
+          {/* Verification Bar */}
+          <div style={{ padding: '12px 30px', background: 'rgba(5, 150, 105, 0.06)', borderBottom: '1px solid rgba(5, 150, 105, 0.15)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#059669', display: 'inline-block' }} />
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#059669' }}>
+              STATUS: LUNAS & AKTIF
+            </span>
+            <span style={{ fontSize: 11.5, color: 'var(--text-muted)', marginLeft: 'auto' }}>
+              {confirmed_at ? new Date(confirmed_at).toLocaleString('id-ID') : new Date().toLocaleString('id-ID')}
             </span>
           </div>
 
-          {/* Destination image */}
-          {destThumb && (
-            <div style={{ height:180, overflow:'hidden', position:'relative' }}>
-              <img src={destThumb} alt={destName} onError={e=>e.target.style.display='none'}
-                style={{ width:'100%', height:'100%', objectFit:'cover', filter:'brightness(0.72) saturate(1.1)' }}/>
-              <div style={{ position:'absolute', inset:0, background:'linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 55%)' }}/>
-              <div style={{ position:'absolute', bottom:14, left:24 }}>
-                <p style={{ fontSize:22, fontWeight:800, color:'#fff', fontFamily:'var(--font-ui)', margin:0, textShadow:'0 2px 8px rgba(0,0,0,0.4)' }}>{destName}</p>
-                {destCity && <p style={{ fontSize:13, color:'rgba(255,255,255,0.8)', margin:'2px 0 0' }}>📍 {destCity}</p>}
-              </div>
+          {/* Destination HD Image */}
+          <div style={{ height: 200, overflow: 'hidden', position: 'relative', background: '#f1f5f9' }}>
+            <img
+              src={destThumb}
+              alt={destName}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.65) 100%)' }} />
+            <div style={{ position: 'absolute', bottom: 16, left: 26 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: '#ffffff', fontFamily: 'var(--font-display)', margin: '0 0 4px', textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                {destName}
+              </h2>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                📍 {destCity}
+              </span>
             </div>
-          )}
+          </div>
 
-          {/* Detail */}
-          <div style={{ padding:'22px 28px' }}>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:18, marginBottom:20 }}>
+          {/* Details Table */}
+          <div style={{ padding: '26px 30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, marginBottom: 24 }}>
               {[
-                ['NAMA PEMESAN',       customer_name],
-                ['NO. HP',             customer_phone],
-                ['EMAIL',              customer_email],
-                ['TANGGAL KUNJUNGAN',  visit_date ? new Date(visit_date).toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : '—'],
-                ['JENIS TIKET',        ticketName],
-                ['JUMLAH',             `${qty} orang`],
-                ['METODE BAYAR',       PAY_LABEL[payment_method]||payment_method||'—'],
-                ['STATUS',             '✅ Terkonfirmasi'],
-              ].map(([label,val]) => (
-                <div key={label}>
-                  <p style={{ fontSize:10, color:'var(--text-muted)', fontFamily:'var(--font-ui)', letterSpacing:'1px', textTransform:'uppercase', margin:'0 0 3px' }}>{label}</p>
-                  <p style={{ fontSize:13, fontWeight:600, color:'var(--text-primary)', margin:0, lineHeight:1.4 }}>{val||'—'}</p>
+                ['NAMA PENGUNJUNG', customer_name || 'Wisatawan'],
+                ['NOMOR WHATSAPP', customer_phone || '—'],
+                ['ALAMAT EMAIL', customer_email || '—'],
+                ['TANGGAL KUNJUNGAN', visit_date ? new Date(visit_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '—'],
+                ['KATEGORI TIKET', ticketName],
+                ['JUMLAH PESERTA', `${qty || 1} Orang`],
+                ['METODE BAYAR', PAY_LABEL[payment_method] || payment_method || 'Transfer Bank'],
+                ['AKSES GERBANG', 'Pintu Masuk Utama Loket'],
+              ].map(([lbl, val]) => (
+                <div key={lbl}>
+                  <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.8px', display: 'block', marginBottom: 4 }}>
+                    {lbl}
+                  </span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {val}
+                  </span>
                 </div>
               ))}
             </div>
 
-            {/* Addon info */}
-            {(transport || tour_guide) && (
-              <div style={{ background:'var(--bg)', borderRadius:12, padding:'12px 16px', marginBottom:18, fontSize:13 }}>
-                {transport && <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}><span style={{ color:'var(--text-secondary)' }}>🚐 {transport.name}</span><span style={{ fontWeight:600 }}>{formatIDR(transport.price_per_day)}/hari</span></div>}
-                {tour_guide && <div style={{ display:'flex', justifyContent:'space-between' }}><span style={{ color:'var(--text-secondary)' }}>👨‍🏫 {tour_guide.name}</span><span style={{ fontWeight:600 }}>{formatIDR(tour_guide.price_per_day)}/hari</span></div>}
-              </div>
-            )}
-
-            {/* Perforated divider */}
-            <div style={{ display:'flex', alignItems:'center', margin:'0 -28px 18px' }}>
-              <div style={{ width:20, height:20, borderRadius:'50%', background:'var(--bg)', flexShrink:0 }}/>
-              <div style={{ flex:1, borderTop:'2px dashed rgba(0,0,0,0.07)' }}/>
-              <div style={{ width:20, height:20, borderRadius:'50%', background:'var(--bg)', flexShrink:0 }}/>
+            {/* Perforated Line */}
+            <div style={{ display: 'flex', alignItems: 'center', margin: '0 -30px 24px' }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg)', flexShrink: 0 }} />
+              <div style={{ flex: 1, borderTop: '2px dashed var(--border)' }} />
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--bg)', flexShrink: 0 }} />
             </div>
 
-            {/* Total breakdown */}
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end' }}>
+            {/* Total & Barcode / QR Mockup */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
               <div>
-                {(transport_subtotal>0||guide_subtotal>0) && (
-                  <div style={{ fontSize:12, color:'var(--text-muted)', marginBottom:8 }}>
-                    <div>Tiket: {formatIDR(ticket_subtotal)}</div>
-                    {transport_subtotal>0 && <div>Transport: {formatIDR(transport_subtotal)}</div>}
-                    {guide_subtotal>0 && <div>Guide: {formatIDR(guide_subtotal)}</div>}
-                  </div>
-                )}
-                <p style={{ fontSize:10, color:'var(--text-muted)', fontFamily:'var(--font-ui)', letterSpacing:'1px', textTransform:'uppercase', margin:'0 0 3px' }}>Total Dibayar</p>
-                <p style={{ fontSize:30, fontWeight:900, color:'var(--accent)', fontFamily:'var(--font-ui)', margin:0 }}>{formatIDR(total)}</p>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 800, letterSpacing: '0.8px', textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+                  TOTAL PEMBAYARAN LUNAS
+                </span>
+                <span style={{ fontSize: 30, fontWeight: 800, color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>
+                  {formatIDR(finalTotal)}
+                </span>
               </div>
-              <div style={{ width:76, height:76, background:'var(--bg-3)', border:'1px solid var(--border)', borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, color:'var(--text-muted)', fontFamily:'var(--font-ui)', textAlign:'center', lineHeight:1.4, padding:8 }}>QR<br/>CODE</div>
+
+              {/* QR Code Graphic Mockup */}
+              <div
+                style={{
+                  background: '#ffffff',
+                  border: '1.5px solid var(--border)',
+                  borderRadius: 14,
+                  padding: '10px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <div
+                  style={{
+                    width: 58,
+                    height: 58,
+                    background: '#0f172a',
+                    borderRadius: 8,
+                    padding: 4,
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, 1fr)',
+                    gap: 2,
+                  }}
+                >
+                  {[1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1].map((dot, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        background: dot ? '#ffffff' : 'transparent',
+                        borderRadius: 1,
+                      }}
+                    />
+                  ))}
+                </div>
+                <div>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--text-primary)', display: 'block' }}>
+                    SCAN DI LOKET
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                    Resmi MustG.id
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div style={{ background:'var(--bg)', borderTop:'1px solid var(--border)', padding:'12px 28px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:8 }}>
-            <p style={{ fontSize:12, color:'var(--text-muted)', margin:0 }}>Tunjukkan receipt ini saat masuk ke destinasi</p>
-            <span style={{ fontSize:11, color:'var(--text-muted)', fontFamily:'var(--font-ui)' }}>mustg.id</span>
+          <div style={{ background: 'var(--bg)', borderTop: '1px solid var(--border)', padding: '14px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+              Tunjukkan voucher digital ini di pintu masuk tanpa perlu dicetak.
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>MUSTG.ID</span>
           </div>
         </div>
 
-        {/* Tips */}
-        <div style={{ marginTop:18, background:'rgba(0,102,255,0.04)', border:'1px solid rgba(0,102,255,0.1)', borderRadius:14, padding:'14px 18px', display:'flex', gap:12 }}>
-          <span style={{ fontSize:18, flexShrink:0 }}>💡</span>
-          <div>
-            <p style={{ fontSize:13, fontWeight:700, color:'var(--text-primary)', margin:'0 0 3px', fontFamily:'var(--font-ui)' }}>Tips Kunjungan</p>
-            <p style={{ fontSize:13, color:'var(--text-secondary)', margin:0, lineHeight:1.65 }}>
-              Datang 15–30 menit lebih awal. Screenshot receipt ini sebagai backup. Bawa KTP sesuai nama pemesan.
-            </p>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="no-print" style={{ display:'flex', gap:12, marginTop:24, flexWrap:'wrap' }}>
-          <button onClick={()=>navigate('home')}
-            style={{ flex:1, minWidth:160, background:'linear-gradient(135deg,#0066ff,#00c6ff)', color:'#fff', border:'none', borderRadius:14, padding:'14px', fontSize:15, fontWeight:800, cursor:'pointer', fontFamily:'var(--font-ui)', boxShadow:'0 8px 24px rgba(0,102,255,0.3)', transition:'all 0.2s' }}
-            onMouseEnter={e=>e.currentTarget.style.transform='translateY(-2px)'}
-            onMouseLeave={e=>e.currentTarget.style.transform='translateY(0)'}>
-            🏠 Kembali ke Home
+        {/* Action Buttons */}
+        <div className="no-print" style={{ display: 'flex', gap: 14, marginTop: 28, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => navigate('home')}
+            style={{
+              flex: 1,
+              minWidth: 170,
+              background: 'var(--grad-primary)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 14,
+              padding: '15px',
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-glow)',
+            }}
+          >
+            🏠 Kembali ke Beranda
           </button>
-          <button onClick={()=>navigate('destinations')}
-            style={{ flex:1, minWidth:160, background:'#fff', color:'var(--text-primary)', border:'1.5px solid var(--border)', borderRadius:14, padding:'14px', fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:'var(--font-ui)', transition:'all 0.2s' }}
-            onMouseEnter={e=>{ e.currentTarget.style.borderColor='var(--accent)'; e.currentTarget.style.color='var(--accent)' }}
-            onMouseLeave={e=>{ e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.color='var(--text-primary)' }}>
-            🗺️ Pesan Lagi
+          <button
+            onClick={() => navigate('destinations')}
+            style={{
+              flex: 1,
+              minWidth: 170,
+              background: '#ffffff',
+              color: 'var(--text-primary)',
+              border: '1.5px solid var(--border)',
+              borderRadius: 14,
+              padding: '15px',
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            🗺️ Jelajah Destinasi Lain
           </button>
-          <button onClick={()=>navigate('my-tickets')}
-            style={{ background:'#fff', color:'var(--text-secondary)', border:'1.5px solid var(--border)', borderRadius:14, padding:'14px 18px', fontSize:15, cursor:'pointer', transition:'all 0.2s' }}
-            onMouseEnter={e=>e.currentTarget.style.borderColor='var(--border-hover)'}
-            onMouseLeave={e=>e.currentTarget.style.borderColor='var(--border)'}>
-            🎫 Tiket Saya
+          <button
+            onClick={() => navigate('my-tickets')}
+            style={{
+              background: '#ffffff',
+              color: 'var(--text-secondary)',
+              border: '1.5px solid var(--border)',
+              borderRadius: 14,
+              padding: '15px 22px',
+              fontSize: 14.5,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            🎫 Lihat Semua Tiket Saya
           </button>
         </div>
       </div>
